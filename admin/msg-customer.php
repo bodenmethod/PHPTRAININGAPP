@@ -1,13 +1,11 @@
 <?php include ('includes/header.php'); ?>
 
-    
 <?php
 
 //Include functions
+include('includes/functions.php');
 
-//check to see if user if logged in else redirect to index page
-
-
+$id= $_GET['cid'];
 
 ?>
 
@@ -20,11 +18,13 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header">
-                           <?php //Collect the admin's name and put it in there using the session super global?> Admin Name | You are Admin
+                           <?php //Collect the admin's name and put it in there using the session super global
+                           echo $_SESSION['user_data']['fullname'] 
+                            ?> | Admin Messenger Page
                         </h3>
                         <ol class="breadcrumb">
                             <li class="active">
-                                <i class="fa fa-envelope"></i> <a href="reports.php">View Report</a>  
+                                <i class="fa fa-envelope"></i> <a href="reports.php?cus_id=<?php echo $id; ?>">View Report</a>  
                             </li>
                             <small class="pull-right"><a href="customers.php"> View Customers </a> </small>
                         </ol>
@@ -44,38 +44,37 @@
                                 <?php
                                 
                                 
-                                /************** Get the value from database using id ******************/  
-          
-      
+/************** Get the value from database using id ******************/  
 
-                                     //Write your query
-                                
-                                     
-                                     //Gt id
-
-
-
-                                     //binding value with your id
-
-
-                                     //Fetch data and keep in row variable
-
-                                
-                                   // if($row)
         
-                                      //{
+            //require database class files
+            require('includes/pdocon.php');
+
+            //instatiating our database objects
+            $db = new Pdocon;
+
+
+            //Create a query to select all users to display in the table
+            $db->query('SELECT * FROM users WHERE id=:id');   
+            
+            $db->bindvalue(':id', $id, PDO::PARAM_INT);
+
+            //Fetch all data and keep in a result set
+            $row  =   $db->fetchSingle(); 
+            
+            if($row) :
                                           
                                       ?>
  
                                 <p style="background-color: #fff; padding: 3px">
-                                    <strong>Name: </strong> <?php //echo fullname ?>
+                                    <strong>Name: </strong> <?php echo $row['full_name'] ?>
                                 </p><hr>
                              
                                 <p style="background-color: #fff; padding: 3px">
-                                    <strong>Spending Amount: </strong>$ <?php //echo amount ?>
+                                    <strong>Spending Amount: </strong>$ <?php echo $row['spending'] ?>
                                 </p><hr>
                                 <p style="background-color: #fff; padding: 3px">
-                                    <strong>Email: </strong> <?php //echo email ?>
+                                    <strong>Email: </strong> <?php echo $row['email'] ?>
                                 </p><hr>
                               
 
@@ -102,14 +101,14 @@
 
                             <div class="col-sm-6">
                              
-                                <form class="form-horizontal" role="form" method="post" action="msg-customer.php?c_id=<?php //echo $row['id'] ?>">
+                                <form class="form-horizontal" role="form" method="post" action="msg-customer.php?cid=<?php echo $row['id'] ?>">
                                     <div class="form-group">
                                         <label for="name">Subject <span class="required">*</span></label>
                                         <input type="text" aria-required="true" size="30" value="" name="subject" id="name" class="form-control" placeholder="Subject">
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email <span class="required">*</span></label>
-                                        <input type="email" aria-required="true" size="30" value="<?php //echo $row['email'] ?>" name="email" id="email" class="form-control" placeholder="<?php //echo $row['email'] ?>" disabled>
+                                        <input type="email" aria-required="true" size="30" value="<?php echo $row['email'] ?>" name="email" id="email" class="form-control" placeholder="<?php echo $row['email'] ?>" disabled>
                                     </div>
                                    
                                     <div class="form-group">
@@ -123,16 +122,13 @@
                                     </div>
                                 </form>
                             </div>
-                            <?php
-                              //  }
-                            ?>    
                             
-                             <?php //call display message function ?>
+                             <?php endif ; ?>
                         </div><!--row-->    
                     </section>
  
      
-     <!--******************************* Contact Customer  Form Processor*****************************-->
+<!--******************************* Contact Customer  Form Processor*****************************-->
       
 <?php 
                //Write a function to check if form is submited
@@ -141,35 +137,38 @@
 
 
                         //Get id
-                       
+                        $id= $_GET['cid'];
 
-                        //make the query 
-                       
+                        $db->query('SELECT * FROM users WHERE id=:id');   
+            
+                        $db->bindvalue(':id', $id, PDO::PARAM_INT);
 
-                        // bind 
-
-                       
-
-                        //Fetch the user and keep it in a row variable
+                        //Fetch the user and keep in a row variable
+                        $row  =   $db->fetchSingle();
                        
                         
                         
                         if($row)
-                        // Collect customer fullname from the database and keep in and $cus_name variable
+                        
                         {
-        
-                          
-  
+                        // Collect customer fullname from the database and keep in and $cus_name variable
+                        $customer_fullname      =   $row['full_name'];    
+                        
                         //Collect and validate form field data and keep in $subject and $message variable        
+                        $raw_subject            =   cleandata($_POST['subject']);
+                        $raw_msg                =   cleandata($_POST['message']);
+
+                        $c_subject              =   sanitize($raw_subject);
+                        $c_msg                  =   sanitize($raw_msg);
                         
 
                         // Create the email and send the message
                         $to                 =   $row['email'];        
-                        $email_subject = "Subject:  $subject";
-                        $email_body = "\nDear $cus_name, \n\nThis is a message from Cus MangerApp.Com.\n\n"."Here are the details:" ."\n\n$message \n\n";
-                        $headers = "From: noreply@customerapp.com"; 
+                        $email_subject      = "Subject:  $c_subject";
+                        $email_body         = "\nDear $customer_fullname, \n\nThis is a message from CustomerManagerApp.Com.\n\n"."Here are the details:" ."\n\n$c_msg \n\n";
+                        $headers            = "From: noreply@customermanagerapp.com"; 
          
-                        if(mail($to,$email_subject,$email_body,$headers)){
+                        if(mail($to,$c_subject,$email_body,$headers)){
                             
                        
                            echo "<div class='alert alert-success text-center'>

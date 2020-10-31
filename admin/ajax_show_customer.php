@@ -1,38 +1,32 @@
 <?php include('includes/header.php'); ?>
 
-
 <?php
 
 //Include functions
-
-//check to see if user if logged in else redirect to index page
+include('includes/functions.php');
 
 ?>
-
-
 
 <?php 
 
 /****************Get  customer info to ajax *******************/
 
-//require database class files
+// Collect id from AJAX url 
+$id = $_GET['cid'];
 
+//require database class files
+require('includes/pdocon.php');
 
 //instatiating our database objects
+$db = new Pdocon;
 
+//Create a query to select all users to display in the table
+$db->query('SELECT * FROM users where id=:id');   
 
-//Create a query to display customer inf // You must bind the id coming in from the ajax data
+$db->bindvalue(':id', $id, PDO::PARAM_INT);
 
-
-
-    
-//Get the id and keep it in a variable from the ajax
-
-
-//Bind your id
-   
-
-//Fetching the data and keep it a row variable
+//Fetch all data and keep in a row variable
+$row  =   $db->fetchSingle(); 
 
 
 
@@ -43,7 +37,7 @@
                     <table class="table table-bordered table-hover table-striped">
                         <thead>
                             <tr >
-                                <th class="text-center">Customer Name</th>
+                                <th class="text-center">Name</th>
                                 <th class="text-center">Amount</th>
                                 <th class="text-center">Email</th>
                             </tr>
@@ -51,7 +45,7 @@
                         <tbody>
                            <tr class="text-center">
                             <td>' . $row['full_name'] . '</td>
-                            <td>$ ' . $row['Spending_Amt'] . '</td>
+                            <td>$ ' . $row['spending'] . '</td>
                             <td>' . $row['email'] . '</td>
                           </tr>
 

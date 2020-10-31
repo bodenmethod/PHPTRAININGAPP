@@ -4,6 +4,7 @@
 <?php
 
 //Include functions
+include('includes/functions.php');
 
 //check to see if user if logged in else redirect to index page
 
@@ -19,56 +20,62 @@
            <?php 
                
                /************** Fetching data from database using id ******************/
+              if(isset($_GET['admin_id'])){
 
+                $admin_id     =   $_GET['admin_id'];
+
+              }
 
                 //require database class files
-
+                require('includes/pdocon.php');
 
                 //instatiating our database objects
+                $db = new Pdocon;
+
+                //Create a query to display admin info // You must bind the id coming in from the url
+                $db->query("SELECT * FROM admin WHERE id = :id");
 
 
-                //Create a query to display customer inf // You must bind the id coming in from the url
 
-
-
-
-                //Get the admin email from the session super global and keep it in a variable.
+                //Get the admin id from the session super global and keep it in a variable.
 
 
                 //Bind your email
-
+                $db->bindvalue(':id', $admin_id, PDO::PARAM_INT);
 
                 //Fetching the data and display it in the form value fields
-               
+                $row = $db->fetchSingle();
           
              
                
     
             //: ?>
+
+            <?php if($row) : ?>
                
             <div class="form-group">
             <label class="control-label col-sm-2" for="name"></label>
             <div class="col-sm-10">
-              <input type="name" name="name" class="form-control" id="name" value="" required>
+              <input type="name" name="name" class="form-control" id="name" value="<?php echo $row['fullname'] ?>" required>
             </div>
           </div>
           
           <div class="form-group">
             <label class="control-label col-sm-2" for="email"></label>
             <div class="col-sm-10">
-              <input type="email" name="username" class="form-control" id="email" value="" required>
+              <input type="email" name="username" class="form-control" id="email" value="<?php echo $row['email'] ?>" required>
             </div>
           </div>
           <div class="form-group">
             <label class="control-label col-sm-2" for="pwd"></label>
             <div class="col-sm-10"> 
-              <input type="password" name="password" class="form-control" id="pwd" placeholder="Confirm Password" required>
+              <input type="password" name="password" class="form-control" id="pwd" placeholder="Confirm Password" value="" required>
             </div>
           </div>
           <div class="form-group">
             <label class="control-label col-sm-2" for="image"></label>
             <div class="col-sm-10">
-              <input type="file" name="image" id="image" placeholder="Choose Image">
+              <input type="file" name="image" id="image" placeholder="Choose Image" required>
             </div>
           </div>
 
@@ -79,35 +86,102 @@
             </div>
           </div>
           
-          <?php // end your php ?>
+            <?php endif; ?>
 </form>
           
 <?php
           
-/************** Update data to database using id ******************/  
-          
-      
-//Get field names from from and validate          
+/************** Update data to database using id ******************/      
+     //Get field names from from and validate          
         
-           
      //Getting image and move images to admin_image folders
           
-     
      //Write your query
-     
-     
-     
+      
      //binding values with your variable
     
-     
      //Execute query statement to send it into the database
      
-     
      //Confirm execution and set your messages to display as well has redirection and errors
-
-
 ?>
           
+
+ 
+<?php
+/*************UPDATE ADMIN ******************/
+
+if(isset($_POST['submit_update'])){
+
+  $raw_name       = cleandata($_POST['name']);
+ 
+  $raw_email      = cleandata($_POST['username']);
+  $raw_password   = cleandata($_POST['password']);
+
+  $c_name         = sanitize($raw_name);
+
+  $c_email        = valemail($raw_email);
+  $c_password     = sanitize($raw_password);
+
+  //Hash password using our md5 function
+  $hashed_Pass     = hashpassword($c_password);
+
+ //Verify file extension
+ $allowed_ext          = array('jpg', 'jpeg', 'png');
+ $filename             = $_FILES['image']['name'];
+ $file_extension       = pathinfo($filename, PATHINFO_EXTENSION);
+
+ if(!in_array($file_extension, $allowed_ext)){
+
+   echo '<div class="alert alert-danger text-center">
+   <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+   <strong>Sorry!</strong> Uploaded File is not a valid file extension. Please try again.
+ </div>';
+
+ }else{
+  //Collect image path
+  $c_img          = $_FILES['image']['name'];
+  $c_img_tmp      = $_FILES['image']['tmp_name'];
+
+  //move image to permanent folder location
+  move_uploaded_file($c_img_tmp, "uploaded_image/$c_img");
+
+
+  //Write query to insert values, bind values
+  $db->query("UPDATE admin SET fullname=:fullname, email=:email, password=:password, image=:image");
+
+  $db->bindvalue(':fullname', $c_name, PDO::PARAM_STR);
+  $db->bindvalue(':email', $c_email, PDO::PARAM_STR);
+  $db->bindvalue(':password', $hashed_Pass, PDO::PARAM_STR);
+  $db->bindvalue(':image', $c_img, PDO::PARAM_STR);
+  
+//Execute and assign a varaible to the execution result 
+// remember it returns true of false
+  $run  =  $db->execute();
+
+           
+//Confirm execute and display error or success message
+  if($run){
+
+    redirect('my_admin.php');
+
+    keepmsg('<div class="alert alert-success text-center" role="alert">
+    Admin updated successfully.
+  </div>');
+
+  }else{
+
+    redirect('my_admin.php');
+
+    keepmsg('<div class="alert alert-dange text-center" role="alert">
+    Update unsuccessful. Please try again.
+  </div>');
+
+  }
+
+}
+}
+
+?>
           
           
   </div>

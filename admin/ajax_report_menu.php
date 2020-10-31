@@ -4,41 +4,39 @@
 <?php
 
 //Include functions
-
-//check to see if user if logged in else redirect to index page
+include('includes/functions.php');
 
 ?>
-
 
 
 <?php 
 
 /****************Getting  report menu to ajax *******************/
 
+// Collect id from AJAX url 
+$id = $_GET['cid'];
 
 //require database class files
-
+require('includes/pdocon.php');
 
 //instatiating our database objects
+$db = new Pdocon;
+
+//Create a query to select all users to display in the table
+$db->query('SELECT * FROM users where id=:id');   
+
+$db->bindvalue(':id', $id, PDO::PARAM_INT);
+
+//Fetch all data and keep in a row variable
+$row  =   $db->fetchSingle(); 
 
 
 
 //write a statement to check if the customer id is coming in from the ajax request and write a function to send back the below report menu to ajax, you must bind using the customer id
-
-
-
-
-    
-  
-
-    //Fetch the result and keep in a rows variable
-    
-    
-
-    //Looping through our fetched array in row vairable. This can go anywhere in the HTML tags
-    if($rows){
+//Looping through our fetched array in row vairable. This can go anywhere in the HTML tags
+    if($row){
         
-        $spending_amount = $rows['Spending_Amt'];
+        $spending_amount = $row['spending'];
         
         $total_orders = 100;
         

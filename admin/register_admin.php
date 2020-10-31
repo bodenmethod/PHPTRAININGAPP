@@ -1,5 +1,5 @@
 <?php 
-include('includes/header.php'); 
+include('../includes/header.php'); 
 
 
 //Include functions
@@ -36,6 +36,19 @@ if(isset($_POST['submit_login'])){
   //Hash password using our md5 function
   $hashed_Pass     = hashpassword($c_password);
 
+  //Verify file extension
+  $allowed_ext          = array('jpg', 'jpeg', 'png');
+  $filename             = $_FILES['image']['name'];
+  $file_extension       = pathinfo($filename, PATHINFO_EXTENSION);
+
+  if(!in_array($file_extension, $allowed_ext)){
+
+    echo '<div class="alert alert-danger text-center">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <strong>Sorry!</strong> Uploaded File is not a valid file extension. Please try again.
+  </div>';
+
+  }else{
 
   //Collect image path
   $c_img          = $_FILES['image']['name'];
@@ -91,6 +104,8 @@ if($row){
   </div>';
 
   }
+
+}
 
 }
 
