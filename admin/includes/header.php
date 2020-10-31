@@ -1,10 +1,23 @@
 <?php 
 //Open ob_start and session_start functions
+    ob_start();
+    session_start();
 
 
 ?>
     
+<?php 
 
+if(isset($_SESSION['user_is_logged_in'])){
+
+}else{
+
+    header("Location: logout.php");
+
+}
+
+
+?>
     
     <html>
 
@@ -64,30 +77,31 @@
                     <li><a href=""></a></li>
                 </ul>
                 
-             <?php //Check to see if user is logged in and collect session info and echo
+              <!--Check to see if user is logged in and collect session info and echo -->
+              <?php if(isset($_SESSION['user_is_logged_in'])){
+
+                $fullname   =    $_SESSION['user_data']['fullname'];
+                $image      =    $_SESSION['user_data']['image'];
+
+                }
+
+                 
                 ?>
                
                
                 <ul class="nav navbar-nav navbar-right">
-                 <li class="navbar-text">Welcome, Fullname Here </li>
+                 <li class="navbar-text">Welcome, <?php echo $fullname ?> </li>
                   <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"></b>
-                        <?php echo 'image' ; ?></a>
+                        <?php echo $image ?></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href=""><i class="fa fa-cog"></i> Account</a></li>
+                                    <li><a href="my_admin.php"><i class="fa fa-cog"></i> Account</a></li>
                                     <li class="divider"></li>
-                                    <li><a href=""><i class="fa fa-sign-out"></i> Sign-out</a></li>
+                                    <li><a href="logout.php"><i class="fa fa-sign-out"></i> Sign-out</a></li>
                                 </ul>
                 </li>
                   
-                </ul>
-
-              <?php // else if the user is not loggin in then show this ?>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="customers.php">Welcome Guest!</a></li>
-                    <li><a href="customers.php">Login</a></li>
-                    <li><a href="register_admin.php">Register</a></li>
-                </ul>
+                </ul>         
      
 
             </div>
